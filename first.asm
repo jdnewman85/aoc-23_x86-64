@@ -117,10 +117,12 @@ strlen:
 
 segment readable writable
 
+db '||||||||||||||||||||||'
 prompt   db 'What is your name?: ', 0
 input    rb 64
 msg_head db 'Hello ', 0
 msg_tail db '!', 10, 0
+db '||||||||||||||||||||||'
 
 struc SizedString [string_data] {
     common
@@ -128,7 +130,9 @@ struc SizedString [string_data] {
      .size = $ - .
 }
 
+db '||||||||||||||||||||||'
 prompt_sized SizedString 'Who goes there?: '
+db '||||||||||||||||||||||'
 
 struc PythonString [string_data] {
     common
@@ -137,4 +141,6 @@ struc PythonString [string_data] {
      @@:
 }
 
+db '||||||||||||||||||||||'
 prompt_python PythonString 'Who is?: '
+db '||||||||||||||||||||||'
