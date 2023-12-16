@@ -20,29 +20,43 @@ SEARCH_BACKWARD = TRUE
 
 NOT_FOUND_RET = -1
 
+;ascii digit to decimal
+;expects ASCII_0..=ASCII_9 value in `arg`
+macro ascdec arg {
+    sub     arg, ASCII_0
+}
+
+macro todo msg {
+    display "TODO (", __FILE__, ":"
+    match line, __LINE__ \{ display \`line, "): " \}
+    display msg, 10
+}
+
 main:
 
-;calculate_line_calibration_value(str.size, &str) -> u
+;calculate_line_calibration_value(str.size, &str) -> u32
+    todo    "Return single calibration value instead of direct sum"
+
     ;first digit
-    ;   call string_find_digit(input.size, input)
+    ;  call string_find_digit(input.size, input)
     mov     rdi, input.size
     mov     rsi, input
     mov     rdx, SEARCH_FORWARD
     call    string_find_digit
-    ;TODO: Check for NOT_FOUND_RET
-    sub     al, ASCII_0              ;Convert to dec
-    imul    eax, 10 ;Scale
+    todo    "Check return value for NOT_FOUND_RET"
+    ascdec  al
+    imul    eax, 10                  ;Scale first digit to tens
     add     eax, [calibration_sum]
     mov     [calibration_sum], eax
 
     ;second digit
-    ;   call string_find_digit(input.size, input, REVERSE)
+    ;  call string_find_digit(input.size, input, REVERSE)
     mov     rdi, input.size
     mov     rsi, input
     mov     rdx, SEARCH_BACKWARD
     call    string_find_digit
-    ;TODO: Check for NOT_FOUND_RET
-    sub     al, ASCII_0              ;Convert to dec
+    todo    "Check return value for NOT_FOUND_RET"
+    ascdec  al
     add     eax, [calibration_sum]
     mov     [calibration_sum], eax
 
@@ -52,20 +66,16 @@ main:
     mov     rax, SYS_EXIT
     syscall
 
-; rdi - haystack size - u64
-; rsi - haystack - string - const char *buf
-; ras - found: ascii digit - char
-;       error: -1
+;string_find_digit(str_size, &str) -> u8
 string_find_digit:
     mov     rcx, rdi
 
+    ;Reverse?
     cmp     rdx, FALSE
     je      start_search
-    ;Let's try to do reverse
     add     rsi, rcx
     dec     rsi
     std
-    ;End reverse
 
 start_search:
     inc     rcx
@@ -77,11 +87,11 @@ search:
     setle   r10b
     cmp     r10b, 1
 next:
-    loopne  search ;Loop until digit
+    loopne  search                   ;Loop until digit found
 
-    cmp     rcx, 0 ;Not found
+    cmp     rcx, 0                   ;Not found
     jne     found
-    mov    rax, NOT_FOUND_RET
+    mov     rax, NOT_FOUND_RET
 found:
     ret
 
