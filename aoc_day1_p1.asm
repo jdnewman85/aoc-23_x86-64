@@ -4,37 +4,69 @@ segment readable executable
 
 entry main
 
-    ;TODO
-    ; Use hard string first
-    ; Declare file
-    ;  Read file with open/Read
-    ;  Read file with open/mmap
-    ; Scan file for first digit and store
-    ; Scan file for second digit in reverse and store
-
-    ; For now, loop for each, and check if digit in range of digits
-
-
-
-
-    ; Load string address into RSI
-    ;     lea rsi, [input] ;or end of input?
-    ; Optionally set dir?
-    ; Preset RCX based to input length
-    ; LODS moves current string byte @ RSI into RAX, and dir-INCs RSI
-    ; CMP - Check min, can compare RAX with immediate value (mabye use dual SUBs?)
-    ; SETcc - Make a logical boolean in reg or mem (could have used MOVcc?)
-    ; CMP - Check max
-    ; SETcc - Make logical boolean in reg or mem
-    ; AND - And result reg/reg or mem/reg
-    ; CMP - Check Result isn't 0
-    ; LOOPcc - Loop based on the compare and RCX
-    ; Store our final result
 ASCII_0 = 48;
 ASCII_9 = ASCII_0+9;
+
+STDOUT = 1
+
+SYS_WRITE = 1
+SYS_EXIT = 60
+
+FALSE = 0
+TRUE = 1
+
+SEARCH_FORWARD = FALSE
+SEARCH_BACKWARD = TRUE
+
+NOT_FOUND_RET = -1
+
 main:
-    lea     rsi, [input]
-    mov     rcx, input.size
+    ;first digit
+    ;   call string_find_digit(input.size, input)
+    mov     rdi, input.size
+    mov     rsi, input
+    mov     rdx, SEARCH_FORWARD
+    call    string_find_digit
+    ;TODO: Check for NOT_FOUND_RET
+    mov     [found_digit_1], al
+
+    ;second digit
+    ;   call string_find_digit(input.size, input, REVERSE)
+    mov     rdi, input.size
+    mov     rsi, input
+    mov     rdx, SEARCH_BACKWARD
+    call    string_find_digit
+    ;TODO: Check for NOT_FOUND_RET
+    mov     [found_digit_2], al
+
+    ;display
+    ;   first
+    lea     rsi, [found_digit_1]
+    mov     rdi, STDOUT
+    mov     rdx, 3
+    mov     rax, SYS_WRITE
+    syscall
+
+;exit:
+    mov     rax, SYS_EXIT
+    syscall
+
+; rdi - haystack size - u64
+; rsi - haystack - string - const char *buf
+; ras - found: ascii digit - char
+;       error: -1
+string_find_digit:
+    mov     rcx, rdi
+
+    cmp     rdx, FALSE
+    je      start_search
+    ;Let's try to do reverse
+    add     rsi, rcx
+    dec     rsi
+    std
+    ;End reverse
+
+start_search:
     inc     rcx
 search:
     lodsb
@@ -45,17 +77,12 @@ search:
     cmp     r10b, 1
 next:
     loopne  search ;Loop until digit
-    cmp     rcx, 0 ;non-0 means we found a digit
-    je      exit_not_found
 
-    mov     rdi, rax
-    jmp     exit
-
-exit_not_found:
-    mov    rdi, 0
-exit:
-    mov    rax, 60                                  ; sys_exit
-    syscall
+    cmp     rcx, 0 ;Not found
+    jne     found
+    mov    rax, NOT_FOUND_RET
+found:
+    ret
 
 segment readable writable
 
@@ -65,6 +92,20 @@ struc SizedString [string_data] {
      .size = $ - .
 }
 
-db '111111'
-input   SizedString ''
-db '111111'
+found_digit_1 db '?'
+found_digit_2 db '?'
+nl db 10
+
+;Memory fence to check bounds
+db '999999'
+;TODO: Put tests in array, loop through, and assert
+;input   SizedString ''
+;input   SizedString 'aa'
+;input   SizedString '2a'
+;input   SizedString 'a2'
+;input   SizedString '12'
+;input   SizedString '21'
+;input   SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf'
+input   SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir'
+;Memory fence to check bounds
+db '999999'
