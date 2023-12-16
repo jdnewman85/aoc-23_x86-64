@@ -21,6 +21,8 @@ SEARCH_BACKWARD = TRUE
 NOT_FOUND_RET = -1
 
 main:
+
+;calculate_line_calibration_value(str.size, &str) -> u
     ;first digit
     ;   call string_find_digit(input.size, input)
     mov     rdi, input.size
@@ -28,7 +30,10 @@ main:
     mov     rdx, SEARCH_FORWARD
     call    string_find_digit
     ;TODO: Check for NOT_FOUND_RET
-    mov     [found_digit_1], al
+    sub     al, ASCII_0              ;Convert to dec
+    imul    eax, 10 ;Scale
+    add     eax, [calibration_sum]
+    mov     [calibration_sum], eax
 
     ;second digit
     ;   call string_find_digit(input.size, input, REVERSE)
@@ -37,15 +42,11 @@ main:
     mov     rdx, SEARCH_BACKWARD
     call    string_find_digit
     ;TODO: Check for NOT_FOUND_RET
-    mov     [found_digit_2], al
+    sub     al, ASCII_0              ;Convert to dec
+    add     eax, [calibration_sum]
+    mov     [calibration_sum], eax
 
-    ;display
-    ;   first
-    lea     rsi, [found_digit_1]
-    mov     rdi, STDOUT
-    mov     rdx, 3
-    mov     rax, SYS_WRITE
-    syscall
+    mov     rdi, rax
 
 ;exit:
     mov     rax, SYS_EXIT
@@ -92,9 +93,7 @@ struc SizedString [string_data] {
      .size = $ - .
 }
 
-found_digit_1 db '?'
-found_digit_2 db '?'
-nl db 10
+calibration_sum dd 0
 
 ;Memory fence to check bounds
 db '999999'
@@ -105,7 +104,7 @@ db '999999'
 ;input   SizedString 'a2'
 ;input   SizedString '12'
 ;input   SizedString '21'
-;input   SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf'
-input   SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir'
+input   SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf'
+;input   SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir'
 ;Memory fence to check bounds
 db '999999'
