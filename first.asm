@@ -14,6 +14,13 @@ macro call_SizedString_print arg_str {
     call SizedString_print
 }
 
+macro call_PythonString_print arg_str {
+    lea  rsi, [arg_str]
+    mov  rdx, arg_str#.size
+    ;mov  rdx, 17
+    call SizedString_print
+}
+
 main:
     ;Print prompt
 ;    lea    rdi, [prompt]                            ; address of msg goes into rdi
@@ -24,7 +31,10 @@ main:
 ;    mov    rdi, 1                                   ; stdout
 ;    mov    rax, 1                                   ; sys_write
 ;    syscall
-    call_SizedString_print prompt_sized
+
+;    call_SizedString_print prompt_sized
+
+    call_PythonString_print prompt_python
 
     ;Read from stdin
     lea    rsi, [input]
@@ -118,4 +128,13 @@ struc SizedString [string_data] {
      .size = $ - .
 }
 
-prompt_sized SizedString 'Who goes there?: ', 0
+prompt_sized SizedString 'Who goes there?: '
+
+struc PythonString [string_data] {
+    common
+     .size dd @f - $
+     . db string_data
+     @@:
+}
+
+prompt_python PythonString 'Who is?: '
