@@ -1,7 +1,5 @@
 format ELF64 executable 3
-
 segment readable executable
-
 entry main
 
 ASCII_0 = 48;
@@ -95,13 +93,14 @@ next:
 found:
     ret
 
-segment readable writable
 
 struc SizedString [string_data] {
     common
      . db string_data
      .size = $ - .
 }
+
+segment readable writable
 
 calibration_sum dd 0
 
