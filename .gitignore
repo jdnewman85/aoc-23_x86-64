@@ -2,7 +2,9 @@
 !*/*.asm
 !Makefile
 !src/
+!inputs/
 !*/*.bash
 !*/*.json
 !*/*.input
+!*/*.sample
 !*/*.md

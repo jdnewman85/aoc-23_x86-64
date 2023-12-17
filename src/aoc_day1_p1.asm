@@ -41,8 +41,10 @@ main:
     ;lea     rsi, [input]
     ;mov     rdi, input_82.size
     ;lea     rsi, [input_82]
-    mov     rdi, input_nl.size
-    lea     rsi, [input_nl]
+    ;mov     rdi, input_nl.size
+    ;lea     rsi, [input_nl]
+    mov     rdi, day1_sample.size
+    lea     rsi, [day1_sample]
     call    string_calibration_value_sum
 
     mov     rdi, rax
@@ -234,3 +236,6 @@ db '999999'
 ;input_nl SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiru',10,'iuicxuvi2uwiqeruiuisd3l4fsdfweir' ; 55 + 24 == 79
 input_nl SizedString 'e2w2e',10,'ivuiwer,.m,dsfhw12eiru',10,'iuicxuvi2uwiqeruiuisd3l4fsdfweir' ; 22 + 12 + 24 == 58
 db '999999'
+
+day1_sample file 'inputs/day1.sample'
+day1_sample.size = $ - day1_sample
