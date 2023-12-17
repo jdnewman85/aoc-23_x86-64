@@ -26,43 +26,46 @@ macro ascdec arg {
 
 macro todo msg {
     display "TODO (", __FILE__, ":"
-    match line, __LINE__ \{ display \`line, "): " \}
+    match line, __LINE__ \{
+        display \`line, "): "
+    \}
     display msg, 10
 }
 
 main:
+    mov     rdi, input.size
+    lea     rsi, [input]
+    mov     rdx, SEARCH_FORWARD
+    call    calculate_line_calibration_value
+    mov     rax, SYS_EXIT
+    syscall
 
 ;calculate_line_calibration_value(str.size, &str) -> u32
-    todo    "Return single calibration value instead of direct sum"
+calculate_line_calibration_value:
+    todo    "Take parameters from main properly"
 
     ;first digit
-    ;  call string_find_digit(input.size, input)
-    mov     rdi, input.size
-    mov     rsi, input
-    mov     rdx, SEARCH_FORWARD
+    ;  call string_find_digit(input.size, input, SEARCH_FORWARD)
     call    string_find_digit
     todo    "Check return value for NOT_FOUND_RET"
     ascdec  al
     imul    eax, 10                  ;Scale first digit to tens
-    add     eax, [calibration_sum]
-    mov     [calibration_sum], eax
+    push    rax                      ;Store
 
     ;second digit
-    ;  call string_find_digit(input.size, input, REVERSE)
+    ;  call string_find_digit(input.size, input, SEARCH_BACKWARD)
     mov     rdi, input.size
     mov     rsi, input
     mov     rdx, SEARCH_BACKWARD
     call    string_find_digit
     todo    "Check return value for NOT_FOUND_RET"
     ascdec  al
-    add     eax, [calibration_sum]
-    mov     [calibration_sum], eax
+    pop     r10                     ;Restore
+    add     eax, r10d               ;Add in first digit
 
     mov     rdi, rax
 
-;exit:
-    mov     rax, SYS_EXIT
-    syscall
+    ret
 
 ;string_find_digit(str_size, &str) -> u8
 string_find_digit:
@@ -70,27 +73,27 @@ string_find_digit:
 
     ;Reverse?
     cmp     rdx, FALSE
-    je      start_search
+    je      string_find_digit.start_search
     add     rsi, rcx
     dec     rsi
     std
 
-start_search:
+    .start_search:
     inc     rcx
-search:
+    .search:
     lodsb
     cmp     al, ASCII_0
-    jl      next
+    jl      string_find_digit.next
     cmp     al, ASCII_9
     setle   r10b
     cmp     r10b, 1
-next:
-    loopne  search                   ;Loop until digit found
+    .next:
+    loopne  string_find_digit.search ;Loop until digit found
 
     cmp     rcx, 0                   ;Not found
-    jne     found
+    jne     string_find_digit.found
     mov     rax, NOT_FOUND_RET
-found:
+    .found:
     ret
 
 
@@ -102,18 +105,16 @@ struc SizedString [string_data] {
 
 segment readable writable
 
-calibration_sum dd 0
-
 ;Memory fence to check bounds
 db '999999'
 ;TODO: Put tests in array, loop through, and assert
-;input   SizedString ''
-;input   SizedString 'aa'
-;input   SizedString '2a'
-;input   SizedString 'a2'
-;input   SizedString '12'
-;input   SizedString '21'
-input   SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf'
-;input   SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir'
+;input   SizedString ''   ;Err
+;input   SizedString 'aa' ;Err
+;input   SizedString '2a' ;22
+;input   SizedString 'a2' ;22
+;input   SizedString '12' ;12
+;input   SizedString '21' ;21
+input   SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf' ;82
+;input   SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir' ;55
 ;Memory fence to check bounds
 db '999999'

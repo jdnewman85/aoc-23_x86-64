@@ -34,11 +34,11 @@ all: $(BINS)
 test_aoc_day1_p1_t1: aoc_day1_p1
 	@printf -- ' %.0s' {1..79}
 	@printf '\n'
-	@printf "$(CYN)Testing$(RST) '$(YLW)$<$(CYN)'\n" %
+	@printf "$(CYN)Testing$(RST) '$(YLW)$(OUT_DIR)/$<$(CYN)'\n" %
 	@printf -- '-%.0s' {1..79}
 	@printf "$(RST)\n"
 	$(eval result := $(shell "$(OUT_DIR)/$<"; echo $$?))
-	$(eval expected := "83")
+	$(eval expected := "82")
 	@if [ $(result) = $(expected) ]; then\
 		printf "\t$(GRN)Pass!$(RST) | result($(GRN)$(result)$(RST)) == expected($(GRN)$(expected)$(RST))";\
 	else\
@@ -53,4 +53,4 @@ clean:
 	@printf -- '-%.0s' {1..79}
 	@printf "$(RST)\n"
 #	rm $(BINS_FULL_PATH)
-	@rm $(OUT_DIR)/* || printf "$(YLW)Nothing to clean$(RST)\n"
+	@rm -Iv $(OUT_DIR)/* || printf "$(YLW)Nothing to clean$(RST)\n"
