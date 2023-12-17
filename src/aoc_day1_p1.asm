@@ -33,9 +33,8 @@ macro todo msg {
 }
 
 main:
-    mov     rdi, input.size
-    lea     rsi, [input]
-    mov     rdx, SEARCH_FORWARD
+    mov     rdi, input_82.size
+    lea     rsi, [input_82]
     call    calculate_line_calibration_value
     mov     rax, SYS_EXIT
     syscall
@@ -45,25 +44,30 @@ calculate_line_calibration_value:
     todo    "Take parameters from main properly"
 
     ;first digit
+    push    r12                      ;Remember caller-owned
+    push    rsi
+    push    rdi
+    mov     rdx, SEARCH_FORWARD
     ;  call string_find_digit(input.size, input, SEARCH_FORWARD)
     call    string_find_digit
     todo    "Check return value for NOT_FOUND_RET"
     ascdec  al
     imul    eax, 10                  ;Scale first digit to tens
-    push    rax                      ;Store
+    mov     r12, rax                 ;Store
 
     ;second digit
     ;  call string_find_digit(input.size, input, SEARCH_BACKWARD)
-    mov     rdi, input.size
-    mov     rsi, input
+    pop     rdi                     ;Restore parameters
+    pop     rsi
     mov     rdx, SEARCH_BACKWARD
     call    string_find_digit
     todo    "Check return value for NOT_FOUND_RET"
     ascdec  al
-    pop     r10                     ;Restore
-    add     eax, r10d               ;Add in first digit
+    add     eax, r12d               ;Add in first digit
 
     mov     rdi, rax
+
+    pop     r12                     ;Restore caller-owned
 
     ret
 
@@ -114,7 +118,7 @@ db '999999'
 ;input   SizedString 'a2' ;22
 ;input   SizedString '12' ;12
 ;input   SizedString '21' ;21
-input   SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf' ;82
-;input   SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir' ;55
-;Memory fence to check bounds
+input_82 SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf' ;82
+db '999999'
+input_55 SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir' ;55
 db '999999'
