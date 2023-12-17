@@ -36,15 +36,6 @@ macro todo msg {
 }
 
 main:
-
-    ;mov     rdi, input.size
-    ;lea     rsi, [input]
-    ;mov     rdi, input_82.size
-    ;lea     rsi, [input_82]
-    ;mov     rdi, input_nl.size
-    ;lea     rsi, [input_nl]
-    ;mov     rdi, day1_sample.size
-    ;lea     rsi, [day1_sample]
     mov     rdi, day1_input.size
     lea     rsi, [day1_input]
     call    string_calibration_value_sum
@@ -131,113 +122,7 @@ string_calibration_value_sum:
     pop     r14
     ret
 
-
-
-
-
-;fn() -> u8
-test_calculate_str_calibration_value:
-    push    r12
-
-    ;input_82
-    mov     rdi, input_82.size
-    lea     rsi, [input_82]
-    call    calculate_str_calibration_value
-    mov     r12, rax
-
-    ;input_55
-    mov     rdi, input_55.size
-    lea     rsi, [input_55]
-    call    calculate_str_calibration_value
-    add     rax, r12
-
-    pop     r12
-    ret
-
-;fn(str.size, &str) -> u32
-calculate_str_calibration_value:
-    ;first digit
-    push    r12                      ;Remember caller-owned
-    push    rsi
-    push    rdi
-    mov     rdx, SEARCH_FORWARD
-    ;  call string_find_digit(input.size, input, SEARCH_FORWARD)
-    call    string_find_digit
-    todo    "Check return value for NOT_FOUND_RET"
-    ascdec  al
-    imul    eax, 10                  ;Scale first digit to tens
-    mov     r12, rax                 ;Store
-
-    ;second digit
-    ;  call string_find_digit(input.size, input, SEARCH_BACKWARD)
-    pop     rdi                     ;Restore parameters
-    pop     rsi
-    mov     rdx, SEARCH_BACKWARD
-    call    string_find_digit
-    todo    "Check return value for NOT_FOUND_RET"
-    ascdec  al
-    add     eax, r12d               ;Add in first digit
-
-    mov     rdi, rax
-
-    pop     r12                     ;Restore caller-owned
-
-    ret
-
-;fn(str_size, &str, drection_bool) -> u8
-string_find_digit:
-    mov     rcx, rdi
-
-    ;Reverse?
-    cmp     rdx, FALSE
-    je      .start_search
-    add     rsi, rcx
-    dec     rsi
-    std
-
-    .start_search:
-    inc     rcx
-    .search:
-    lodsb
-    cmp     al, ASCII_0
-    jl      .next
-    cmp     al, ASCII_9
-    setle   r10b
-    cmp     r10b, 1
-    .next:
-    loopne  .search ;Loop until digit found
-
-    cmp     rcx, 0                   ;Not found
-    jne     .found
-    mov     rax, NOT_FOUND_RET
-    .found:
-    ret
-
-
-struc SizedString [string_data] {
-    common
-     . db string_data
-     .size = $ - .
-}
-
 segment readable writable
-
-;Memory fence to check bounds
-db '999999'
-;TODO: Put tests in array, loop through, and assert
-;input   SizedString ''   ;Err
-;input   SizedString 'aa' ;Err
-;input   SizedString '2a' ;22
-;input   SizedString 'a2' ;22
-;input   SizedString '12' ;12
-;input   SizedString '21' ;21
-input_82 SizedString 'jaskdajdkfj8ssdfsdf65457464512askdf1ewyrioyisdfasd2fwersdf' ;82
-db '999999'
-input_55 SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiruiuicxuviuwiqeruiuisdfsdfweir' ;55
-db '999999'
-;input_nl SizedString 'eweiruioxcivuiwer,.m,dsfhw5eiru',10,'iuicxuvi2uwiqeruiuisd3l4fsdfweir' ; 55 + 24 == 79
-input_nl SizedString 'e2w2e',10,'ivuiwer,.m,dsfhw12eiru',10,'iuicxuvi2uwiqeruiuisd3l4fsdfweir' ; 22 + 12 + 24 == 58
-db '999999'
 
 day1_sample file 'inputs/day1.sample'
 day1_sample.size = $ - day1_sample
