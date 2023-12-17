@@ -35,16 +35,29 @@ macro todo msg {
 main:
     ;push    r12
 
+    todo    "Change to single pass sum"
+    ;mmap file, or file directive
+    ;Loop through entire string
+    ;  On digits, no_first_char -> set_first_char
+    ;  On digits, first_char -> set_last_char
+    ;  On digits, first_char, newline|oef -> sum
+    ;    first_char, newline|eof -> first_char*10+first_char
+    ;    first_char, last_char, newline|eof -> first_char*10+second_char
+    ;  On eof
+    ;    return sum
+
+    todo    "Loop through string, on each newline or eof, call calculate_str_calibration_value with each line?"
+
     ;.first:
     mov     rdi, input_82.size
     lea     rsi, [input_82]
-    call    calculate_line_calibration_value
+    call    calculate_str_calibration_value
     mov     r12, rax
 
     ;.second:
     mov     rdi, input_55.size
     lea     rsi, [input_55]
-    call    calculate_line_calibration_value
+    call    calculate_str_calibration_value
     add     rax, r12
 
     ;pop     r12
@@ -53,8 +66,8 @@ main:
     mov     rax, SYS_EXIT
     syscall
 
-;calculate_line_calibration_value(str.size, &str) -> u32
-calculate_line_calibration_value:
+;calculate_str_calibration_value(str.size, &str) -> u32
+calculate_str_calibration_value:
     ;first digit
     push    r12                      ;Remember caller-owned
     push    rsi
