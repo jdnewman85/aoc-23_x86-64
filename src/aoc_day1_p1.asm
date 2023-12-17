@@ -33,16 +33,28 @@ macro todo msg {
 }
 
 main:
+    ;push    r12
+
+    ;.first:
     mov     rdi, input_82.size
     lea     rsi, [input_82]
     call    calculate_line_calibration_value
+    mov     r12, rax
+
+    ;.second:
+    mov     rdi, input_55.size
+    lea     rsi, [input_55]
+    call    calculate_line_calibration_value
+    add     rax, r12
+
+    ;pop     r12
+
+    mov     rdi, rax
     mov     rax, SYS_EXIT
     syscall
 
 ;calculate_line_calibration_value(str.size, &str) -> u32
 calculate_line_calibration_value:
-    todo    "Take parameters from main properly"
-
     ;first digit
     push    r12                      ;Remember caller-owned
     push    rsi
@@ -71,7 +83,7 @@ calculate_line_calibration_value:
 
     ret
 
-;string_find_digit(str_size, &str) -> u8
+;string_find_digit(str_size, &str, drection_bool) -> u8
 string_find_digit:
     mov     rcx, rdi
 
