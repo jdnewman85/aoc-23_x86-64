@@ -4,6 +4,7 @@ entry main
 
 ASCII_0 = 48;
 ASCII_9 = ASCII_0+9;
+ASCII_NL = 10;
 
 STDOUT = 1
 
@@ -18,6 +19,8 @@ SEARCH_BACKWARD = TRUE
 
 NOT_FOUND_RET = -1
 
+NONE = 0
+
 ;ascii digit to decimal
 ;expects ASCII_0..=ASCII_9 value in `arg`
 macro ascdec arg {
@@ -29,44 +32,123 @@ macro todo msg {
     match line, __LINE__ \{
         display \`line, "): "
     \}
-    display msg, 10
+    display msg, ASCII_NL
 }
 
 main:
-    ;push    r12
 
-    todo    "Change to single pass sum"
-    ;mmap file, or file directive
-    ;Loop through entire string
-    ;  On digits, no_first_char -> set_first_char
-    ;  On digits, first_char -> set_last_char
-    ;  On digits, first_char, newline|oef -> sum
-    ;    first_char, newline|eof -> first_char*10+first_char
-    ;    first_char, last_char, newline|eof -> first_char*10+second_char
-    ;  On eof
-    ;    return sum
-
-    todo    "Loop through string, on each newline or eof, call calculate_str_calibration_value with each line?"
-
-    ;.first:
+    ;mov     rdi, input.size
+    ;lea     rsi, [input]
     mov     rdi, input_82.size
     lea     rsi, [input_82]
-    call    calculate_str_calibration_value
-    mov     r12, rax
-
-    ;.second:
-    mov     rdi, input_55.size
-    lea     rsi, [input_55]
-    call    calculate_str_calibration_value
-    add     rax, r12
-
-    ;pop     r12
+    call    string_calibration_value_sum
 
     mov     rdi, rax
     mov     rax, SYS_EXIT
     syscall
 
-;calculate_str_calibration_value(str.size, &str) -> u32
+;fn(str_size, &str) -> u8
+;r12 - current lines, first digit dec
+;r13 - current lines, last digit dec
+;r14 - acc
+string_calibration_value_sum:
+    todo    'BUG: Zero length str'
+    todo    'BUG: No digits returning 0'
+    push    r14
+    push    r13
+    push    r12
+    mov     r12, NONE
+    mov     r13, NONE
+    mov     r14, 0
+
+    ;Prep rcx for loop, with size+1
+    mov     rcx, rdi
+    .search:
+    lodsb
+    ;Check if newline
+    cmp     al, ASCII_NL
+    jne     .digit_check
+    ;Is newline
+    ;-if first digit == none -> err
+    cmp     r12, NONE
+    je      .error_digit_not_found_line
+    ;-if second digit == none -> copy from first digit
+    cmp     r13, NONE
+    cmove   r13, r12
+    ;-calc sum += (first*10 + second)
+    imul    r12, 10
+    add     r14, r12
+    add     r14, r13
+    ;-clear current line's digits
+    mov     r12, NONE
+    mov     r13, NONE
+    jmp     .next
+    .digit_check:
+    ;Check if digit
+    cmp     al, ASCII_0
+    jl      .next
+    cmp     al, ASCII_9
+    jg      .next
+    ;Is a digit
+    ascdec  al
+    cmp     r12, NONE
+    jne     .set_last
+    ;-first_digit == none
+    ;TODO REM: Going to scale at newline/eos evals
+    ;imul    al, 10                   ;Scale
+    mov     r12b, al
+    jmp     .next
+    .set_last:
+    ;-first_digit == Some(value)
+    mov     r13b, al
+    .next:
+    loop    .search ;Loop until eos
+
+    ;If any remains from the last line, sum it here
+    ;-if second digit == none -> copy from first digit
+    cmp     r13, NONE
+    cmove   r13, r12
+    ;-calc sum += (first*10 + second)
+    imul    r12, 10
+    add     r14, r12
+    add     r14, r13
+
+    mov     rax, r14
+    jmp     .return
+
+    .error_digit_not_found_line:
+    mov     rax, NOT_FOUND_RET
+
+    .return:
+    pop     r12
+    pop     r13
+    pop     r14
+    ret
+
+
+
+
+
+;fn() -> u8
+test_calculate_str_calibration_value:
+    push    r12
+
+    ;input_82
+    mov     rdi, input_82.size
+    lea     rsi, [input_82]
+    call    calculate_str_calibration_value
+    mov     r12, rax
+
+    ;input_55
+    mov     rdi, input_55.size
+    lea     rsi, [input_55]
+    call    calculate_str_calibration_value
+    add     rax, r12
+
+    pop     r12
+    ret
+
+;fn(str.size, &str) -> u32
 calculate_str_calibration_value:
     ;first digit
     push    r12                      ;Remember caller-owned
@@ -96,13 +178,13 @@ calculate_str_calibration_value:
 
     ret
 
-;string_find_digit(str_size, &str, drection_bool) -> u8
+;fn(str_size, &str, drection_bool) -> u8
 string_find_digit:
     mov     rcx, rdi
 
     ;Reverse?
     cmp     rdx, FALSE
-    je      string_find_digit.start_search
+    je      .start_search
     add     rsi, rcx
     dec     rsi
     std
@@ -112,15 +194,15 @@ string_find_digit:
     .search:
     lodsb
     cmp     al, ASCII_0
-    jl      string_find_digit.next
+    jl      .next
     cmp     al, ASCII_9
     setle   r10b
     cmp     r10b, 1
     .next:
-    loopne  string_find_digit.search ;Loop until digit found
+    loopne  .search ;Loop until digit found
 
     cmp     rcx, 0                   ;Not found
-    jne     string_find_digit.found
+    jne     .found
     mov     rax, NOT_FOUND_RET
     .found:
     ret
