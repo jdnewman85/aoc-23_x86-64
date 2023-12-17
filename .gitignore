@@ -1,2 +1,7 @@
 *
 !*.asm
+!Makefile
+!*.bash
+!*.json
+!*.input
+!*.md
