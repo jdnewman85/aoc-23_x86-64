@@ -43,8 +43,10 @@ main:
     ;lea     rsi, [input_82]
     ;mov     rdi, input_nl.size
     ;lea     rsi, [input_nl]
-    mov     rdi, day1_sample.size
-    lea     rsi, [day1_sample]
+    ;mov     rdi, day1_sample.size
+    ;lea     rsi, [day1_sample]
+    mov     rdi, day1_input.size
+    lea     rsi, [day1_input]
     call    string_calibration_value_sum
 
     mov     rdi, rax
@@ -239,3 +241,6 @@ db '999999'
 
 day1_sample file 'inputs/day1.sample'
 day1_sample.size = $ - day1_sample
+
+day1_input file 'inputs/day1.input'
+day1_input.size = $ - day1_input
