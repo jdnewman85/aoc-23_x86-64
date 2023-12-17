@@ -1,7 +1,8 @@
 *
-!*.asm
+!*/*.asm
 !Makefile
-!*.bash
-!*.json
-!*.input
-!*.md
+!src/
+!*/*.bash
+!*/*.json
+!*/*.input
+!*/*.md
